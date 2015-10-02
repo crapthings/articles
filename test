@@ -1,0 +1,57 @@
+# define models
+
+models = [
+	'authors'
+	'posts'
+	'books'
+]
+
+@collections = {}
+
+@db = collections
+
+FlowRouter.onRouteRegister (route) ->
+	console.log route
+
+for model in models
+
+	collections[model] = new Mongo.Collection model
+
+	# meteor add matb33:collection-hooks
+
+	if collections[model].hookOptions
+
+		collections[model].before.insert (userId, model) ->
+			_.extend model,
+				createdAt: new Date()
+				creatorId: userId
+
+	methods = {}
+
+	methods["#{model}.insert"] = (opt) ->
+		collections[model].insert opt
+
+	methods["#{model}.update"] = (id, opt) ->
+		collections[model].update id, $set: opt
+
+	methods["#{model}.remove"] = (id) ->
+		collections[model].remove id
+
+	Meteor.methods methods
+
+	# if Meteor.isClient
+
+	# 	FlowRouter.route "/#{model}",
+	# 		action: ->
+	# 			console.log model
+	# 			BlazeLayout.render 'layout',
+	# 				main: model
+
+		# meteor add iron:router
+
+		# routerData = {}
+		# routerData[model] = -> collections[model].find {}
+
+		# Router.route "/#{model}",
+		# 	name: model
+		# 	template: model
